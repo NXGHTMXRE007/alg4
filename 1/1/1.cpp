@@ -1,123 +1,185 @@
-﻿
 #include <iostream>
-#include <stack>
-#include <queue>
-#include <deque>
-#include <string>
-#include <algorithm>
-#include <cctype>
+
 using namespace std;
 
-// 1. Проверка HTML-тегов
-bool checkHTML(string s) {
-    stack<string> st;
+template <typename T>
+class DoublyLinkedList {
+public:
+    struct Node {
+        T data;
+        Node* prev;
+        Node* next;
 
-    for (int i = 0; i < s.size(); i++) {
-        if (s[i] != '<') continue;
+        Node(const T& value) : data(value), prev(nullptr), next(nullptr) {}
+    };
 
-        int j = s.find('>', i);
-        if (j == string::npos) return false;
+private:
+    Node* head; 
+    Node* tail;
+    int count;  
 
-        string tag = s.substr(i + 1, j - i - 1);
-        if (tag.empty() || tag[0] == '!' || tag[0] == '?') {
-            i = j;
-            continue;
+public:
+
+    DoublyLinkedList() : head(nullptr), tail(nullptr), count(0) {}
+
+
+    DoublyLinkedList(const DoublyLinkedList& other) : head(nullptr), tail(nullptr), count(0) {
+        Node* current = other.head;
+        while (current != nullptr) {
+            push_back(current->data);
+            current = current->next;
+        }
+    }
+
+
+    DoublyLinkedList& operator=(const DoublyLinkedList& other) {
+        if (this == &other) {
+            return *this;
         }
 
-        bool close = tag[0] == '/';
-        bool self = tag.back() == '/';
+        clear(); 
 
-        if (close) tag.erase(0, 1);
-        if (self) tag.pop_back();
-
-        string name = tag.substr(0, tag.find_first_of(" \t"));
-
-        if (name == "br" || name == "img" || name == "hr" ||
-            name == "input" || name == "meta" || name == "link")
-            self = true;
-
-        if (close) {
-            if (st.empty() || st.top() != name) return false;
-            st.pop();
+        Node* current = other.head;
+        while (current != nullptr) {
+            push_back(current->data);
+            current = current->next;
         }
-        else if (!self) {
-            st.push(name);
+        return *this;
+    }
+
+
+    ~DoublyLinkedList() {
+        clear();
+    }
+
+
+    void clear() {
+        while (head != nullptr) {
+            Node* temp = head;
+            head = head->next;
+            delete temp;
+        }
+        tail = nullptr;
+        count = 0;
+    }
+
+    void push_front(const T& value) {
+        Node* newNode = new Node(value);
+        if (head == nullptr) {
+            head = tail = newNode;
+        } else {
+            newNode->next = head;
+            head->prev = newNode;
+            head = newNode;
+        }
+        count++;
+    }
+
+    void push_back(const T& value) {
+        Node* newNode = new Node(value);
+        if (tail == nullptr) {
+            head = tail = newNode;
+        } else {
+            tail->next = newNode;
+            newNode->prev = tail;
+            tail = newNode;
+        }
+        count++;
+    }
+
+    Node* find(const T& value) const {
+        Node* current = head;
+        while (current != nullptr) {
+            if (current->data == value) {
+                return current;
+            }
+            current = current->next;
+        }
+        return nullptr;
+    }
+
+    void insert_after(Node* node, const T& value) {
+        if (node == nullptr) {
+            push_front(value);
+            return;
         }
 
-        i = j;
+        Node* newNode = new Node(value);
+        newNode->next = node->next;
+        newNode->prev = node;
+
+        if (node->next != nullptr) {
+            node->next->prev = newNode;
+        } else {
+            tail = newNode;
+        }
+
+        node->next = newNode;
+        count++;
     }
 
-    return st.empty();
-}
-
-// 2. Удаление четных чисел из очереди
-void removeEven(queue<int>& q) {
-    int n = q.size();
-
-    while (n--) {
-        int x = q.front();
-        q.pop();
-        if (x % 2 != 0) q.push(x);
-    }
-}
-
-// 3. Проверка палиндрома
-bool palindrome(string s) {
-    deque<char> d;
-
-    for (unsigned char c : s) {
-        if (isalnum(c))
-            d.push_back(tolower(c));
+    void print() const {
+        Node* current = head;
+        cout << "[";
+        while (current != nullptr) {
+            cout << current->data;
+            if (current->next != nullptr) {
+                cout << ", ";
+            }
+            current = current->next;
+        }
+        cout << "]" << endl;
     }
 
-    while (d.size() > 1) {
-        if (d.front() != d.back())
-            return false;
+    DoublyLinkedList intersection(const DoublyLinkedList& other) const {
+        DoublyLinkedList result;
+        Node* current = head;
 
-        d.pop_front();
-        d.pop_back();
+        while (current != nullptr) {
+
+            if (other.find(current->data) != nullptr && result.find(current->data) == nullptr) {
+                result.push_back(current->data);
+            }
+            current = current->next;
+        }
+
+        return result;
     }
-
-    return true;
-}
-
-// 4. Приоритетная очередь
-void priorityQueueExample() {
-    priority_queue<int> pq;
-
-    pq.push(5);
-    pq.push(2);
-    pq.push(10);
-    pq.push(7);
-
-    while (!pq.empty()) {
-        cout << pq.top() << " ";
-        pq.pop();
-    }
-    cout << endl;
-}
+};
 
 int main() {
-    cout << "HTML: "
-        << (checkHTML("<html><body></body></html>") ? "OK" : "Error")
-        << endl;
+    setlocale(LC_ALL, "Russian");
 
-    queue<int> q;
-    for (int x : {1, 2, 3, 4, 5, 6}) q.push(x);
+    DoublyLinkedList<int> list1;
+    DoublyLinkedList<int> list2;
 
-    removeEven(q);
-    cout << "Queue: ";
-    while (!q.empty()) {
-        cout << q.front() << " ";
-        q.pop();
-    }
 
-    cout << "\nPalindrome: "
-        << (palindrome("А роза упала на лапу Азора") ? "Yes" : "No")
-        << endl;
+    list1.push_back(1);
+    list1.push_back(2);
+    list1.push_back(2);
+    list1.push_back(3);
+    list1.push_back(4);
+    list1.push_back(4);
+    list1.push_back(5);
 
-    cout << "Priority queue: ";
-    priorityQueueExample();
+
+    list2.push_back(2);
+    list2.push_back(2);
+    list2.push_back(3);
+    list2.push_back(4);
+    list2.push_back(6);
+
+    cout << "Первый список: ";
+    list1.print();
+
+    cout << "Второй список: ";
+    list2.print();
+
+    cout << endl;
+
+    DoublyLinkedList<int> result = list1.intersection(list2);
+    cout << "Результат: ";
+    result.print();
 
     return 0;
 }
