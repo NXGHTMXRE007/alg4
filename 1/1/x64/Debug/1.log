@@ -1,2 +1,4 @@
 ﻿  1.cpp
+C:\Users\multz\OneDrive\Desktop\алгоритмы1\1\1\1.cpp(18,15): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
+C:\Users\multz\OneDrive\Desktop\алгоритмы1\1\1\1.cpp(55,11): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
   1.vcxproj -> C:\Users\multz\OneDrive\Desktop\алгоритмы1\1\x64\Debug\1.exe
